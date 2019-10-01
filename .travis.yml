@@ -1,0 +1,12 @@
+language: node_js
+node_js:
+  - "12"
+deploy:
+  provider: pages
+  local_dir: dist
+  github_token: $GITHUB_TOKEN
+  keep_history: true
+  skip_cleanup: true
+  on:
+    branch: master
+    tags: true
