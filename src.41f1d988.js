@@ -3,4 +3,4 @@ function n(r){return(n="function"==typeof Symbol&&"symbol"==typeof Symbol.iterat
 },{}],"Focm":[function(require,module,exports) {
 "use strict";var e=require("./elm.js");e.Elm.Main.init({node:document.querySelector("main")});
 },{"./elm.js":"TLDZ"}]},{},["Focm"], null)
-//# sourceMappingURL=/src.41f1d988.js.map
+//# sourceMappingURL=/check-some-boxes/src.41f1d988.js.map
