@@ -1,14 +1,14 @@
 {
   "private": true,
   "scripts": {
-    "test": "ava",
-    "dev": "parcel src/index.html"
+    "build-elm": "elm make src/Main.elm --output=src/elm.js",
+    "test": "npm run build-elm && ava",
+    "dev": "npm run build-elm && parcel src/index.html",
+    "build": "npm run build-elm && parcel build src/index.html src/404.html"
   },
   "devDependencies": {
     "ava": "^2.4.0",
     "elm": "^0.19.0-no-deps",
-    "elm-hot": "^1.1.2",
-    "node-elm-compiler": "^5.0.4",
     "parcel-bundler": "^1.12.3",
     "taiko": "^1.0.0"
   }
