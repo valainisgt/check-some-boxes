@@ -3,7 +3,7 @@ const { openBrowser, goto, closeBrowser, currentURL } = require('taiko');
 const Bundler = require('parcel-bundler');
 
 test.before(async t => {
-    const server = await new Bundler(["./src/index.html", "./src/404.html"], {publicUrl: "/check-some-boxes/"}).serve();
+    const server = await new Bundler(["./src/index.html", "./src/404.html"], {publicUrl: "/check-some-boxes/", outDir: "./tests/dist"}).serve();
     t.context = {
         server: server
     }
