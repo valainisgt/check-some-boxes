@@ -4,7 +4,7 @@
     "build-elm": "elm make src/Main.elm --output=src/elm.js",
     "test": "npm run build-elm && ava",
     "dev": "npm run build-elm && parcel src/index.html",
-    "build": "npm run build-elm && parcel build src/index.html src/404.html"
+    "build": "npm run build-elm && parcel build src/index.html src/404.html --public-url /check-some-boxes"
   },
   "devDependencies": {
     "ava": "^2.4.0",
