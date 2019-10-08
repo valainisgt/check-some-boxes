@@ -1,11 +1,13 @@
 const { openBrowser, goto, closeBrowser, text } = require('taiko');
 import { fakeServer } from "./../infrastructure/fakeServer";
+import { build, buildDir } from "./../infrastructure/build";
 import { Server } from "http";
 import anyTest, {TestInterface} from 'ava';
 const test = anyTest as TestInterface<{server: Server}>;
 
 test.before(async t => {
-    const app = await fakeServer(true);
+    await build(true);
+    const app = fakeServer(buildDir);
     t.context = {
         server: app.listen(8080)
     }

@@ -1,20 +1,21 @@
 import express, { Application } from "express";
-import { build, buildDir } from "./build";
 import path from "path";
+import fs from "fs";
 
-export const fakeServer = async (optimize: boolean) => {
-    await build(optimize);
+export const fakeServer = (assetsDir: string) => {
+
+    if(!fs.existsSync(assetsDir)){ throw `Invalid Directory ${assetsDir}`; }
 
     const app: Application = express();
 
-    app.use("/check-some-boxes", express.static(buildDir));
+    app.use("/check-some-boxes", express.static(assetsDir));
     
     app.get("/check-some-boxes/", (_,res) => {
-        res.sendFile(path.join(buildDir, "index.html"));
+        res.sendFile(path.join(assetsDir, "index.html"));
     });
 
     app.get("/check-some-boxes/*", (_,res) => {
-        res.sendFile(path.join(buildDir, "404.html"));
+        res.sendFile(path.join(assetsDir, "404.html"));
     });
 
     return app;
