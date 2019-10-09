@@ -14,9 +14,9 @@ test.before(async t => {
     await openBrowser();
 })
 
-test.serial("Page says hello world", async t => {
+test.serial("Page Renders", async t => {
     await goto("http://localhost:8080/check-some-boxes/");
-    const actual = await text("hello world!").exists();
+    const actual = await text("Check Some Boxes!").exists();
     t.is(actual, true);
 })
 
