@@ -1,4 +1,4 @@
-const { openBrowser, goto, closeBrowser, textBox, focus, press, listItem, write, into, evaluate } = require('taiko');
+const { openBrowser, goto, closeBrowser, textBox, focus, press, listItem, write, into, text } = require('taiko');
 import { fakeServer } from "./../infrastructure/fakeServer";
 import { build, buildDir } from "./../infrastructure/build";
 import { Server } from "http";
@@ -16,6 +16,10 @@ test.beforeEach(async t => {
     await openBrowser();
     await goto("http://localhost:8081/check-some-boxes/");
 });
+test.serial("Page Renders", async t => {
+    const actual = await text("Check Some Boxes!").exists();
+    t.is(actual, true);
+})
 test.serial("Pressing enter with no task text does nothing", async t => {
     await focus(textBox({id: "newTask"}));
     await press('Enter');
@@ -65,6 +69,6 @@ test.serial("Adding multiple tasks adds the correct number of tasks and in order
 test.afterEach(async t => {
     await closeBrowser();
 });
-test.after.always(async t => {
+test.after(async t => {
 	t.context.server.close();
 });
