@@ -4,7 +4,7 @@ node_js:
 before_deploy: npm run build
 deploy:
   provider: pages
-  local_dir: dist
+  local_dir: build
   github_token: $GITHUB_TOKEN
   keep_history: true
   skip_cleanup: true
