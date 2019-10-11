@@ -1,4 +1,4 @@
-const { openBrowser, goto, closeBrowser, textBox, focus, press, listItem, write, into, text } = require('taiko');
+const { openBrowser, goto, closeBrowser, textBox, focus, press, listItem, write, into, text, click, button, toRightOf, below } = require('taiko');
 import { fakeServer } from "./../infrastructure/fakeServer";
 import { build, buildDir } from "./../infrastructure/build";
 import { Server } from "http";
@@ -36,10 +36,8 @@ test.serial("Pressing enter with valid task text adds task", async t => {
     const expectedText = "task 1";
     await write(expectedText, into(textBox({id:"newTask"})));
     await press('Enter');
-    const exists = await listItem().exists();
-    const actualText = await listItem().text();
+    const exists = await text("task 1", below(textBox({id:"newTask"}))).exists();
     t.is(exists, true);
-    t.deepEqual(actualText, [expectedText]);
 });
 test.serial("Pressing enter with valid task text clears input", async t => {
     await write("task 1", into(textBox({id:"newTask"})));
@@ -62,8 +60,67 @@ test.serial("Adding multiple tasks adds the correct number of tasks and in order
     await press('Enter');
     await write(expectedText[2], into(textBox({id:"newTask"})));
     await press('Enter');
-    const actualText = await listItem().text();
-    t.deepEqual(actualText, expectedText);
+    
+    const task1 = await text("task 1", below(textBox({id:"newTask"}))).exists();
+    const task2 = await text("task 2", below(textBox({id:"newTask"}))).exists();
+    const task3 = await text("task 3", below(textBox({id:"newTask"}))).exists();
+    t.is(task1, true);
+    t.is(task2, true);
+    t.is(task3, true);
+});
+
+test.serial("First item is removed properly", async t => {
+    await write("task 1", into(textBox({id:"newTask"})));
+    await press('Enter');
+    await write("task 2", into(textBox({id:"newTask"})));
+    await press('Enter');
+    await write("task 3", into(textBox({id:"newTask"})));
+    await press('Enter');
+
+    await click(button(),toRightOf("task 1"));
+
+    const task1 = await text("task 1", below(textBox({id:"newTask"}))).exists();
+    const task2 = await text("task 2", below(textBox({id:"newTask"}))).exists();
+    const task3 = await text("task 3", below(textBox({id:"newTask"}))).exists();
+    t.is(task1, false);
+    t.is(task2, true);
+    t.is(task3, true);
+});
+
+test.serial("Second item is removed properly", async t => {
+    await write("task 1", into(textBox({id:"newTask"})));
+    await press('Enter');
+    await write("task 2", into(textBox({id:"newTask"})));
+    await press('Enter');
+    await write("task 3", into(textBox({id:"newTask"})));
+    await press('Enter');
+
+    await click(button(),toRightOf("task 2"));
+
+    const task1 = await text("task 1", below(textBox({id:"newTask"}))).exists();
+    const task2 = await text("task 2", below(textBox({id:"newTask"}))).exists();
+    const task3 = await text("task 3", below(textBox({id:"newTask"}))).exists();
+    t.is(task1, true);
+    t.is(task2, false);
+    t.is(task3, true);
+});
+
+test.serial("Third item is removed properly", async t => {
+    await write("task 1", into(textBox({id:"newTask"})));
+    await press('Enter');
+    await write("task 2", into(textBox({id:"newTask"})));
+    await press('Enter');
+    await write("task 3", into(textBox({id:"newTask"})));
+    await press('Enter');
+
+    await click(button(),toRightOf("task 3"));
+
+    const task1 = await text("task 1", below(textBox({id:"newTask"}))).exists();
+    const task2 = await text("task 2", below(textBox({id:"newTask"}))).exists();
+    const task3 = await text("task 3", below(textBox({id:"newTask"}))).exists();
+    t.is(task1, true);
+    t.is(task2, true);
+    t.is(task3, false);
 });
 
 test.afterEach(async t => {

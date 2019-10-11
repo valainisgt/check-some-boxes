@@ -1,14 +1,15 @@
 module Main exposing (main)
 
 import Browser
-import Html exposing (Html, text, div, h1, input, ul, li, Attribute)
+import Html exposing (Html, text, div, h1, input, ul, li, Attribute, button)
 import Html.Attributes exposing (class, style, placeholder, value, id)
-import Html.Events exposing (onInput, keyCode, on)
+import Html.Events exposing (onInput, keyCode, on, onClick)
 import Json.Decode as Json
 
 type Msg 
     = ChangeNewTask String
     | AddTask String
+    | RemoveTask Int
 
 type CompletionStatus = Incomplete | Completed
 type alias Task = 
@@ -41,6 +42,9 @@ onEnter msg =
     in
         on "keydown" (Json.andThen isEnter keyCode)
 
+times: Char
+times = '\u{00D7}'
+
 view: Model -> Html Msg
 view model =
     div [ style "padding" "64px" ] [
@@ -49,7 +53,7 @@ view model =
             div [ class "w3-padding-16" ] [
                 input [ id "newTask", class "w3-input", placeholder "what needs to be done?", value model.newTaskText, onInput ChangeNewTask, onEnter (AddTask (String.trim model.newTaskText)) ] []
             ],
-            ul [ class "w3-ul" ] (List.map (\task -> li [] [text task.text]) model.tasks)
+            ul [ class "w3-ul" ] (List.indexedMap (\index task -> li [ class "w3-display-container" ] [text task.text, button [ class "w3-button", class "w3-display-right", onClick (RemoveTask index)] [ text (String.fromChar times)] ]) model.tasks)
         ]
     ]
     
@@ -61,5 +65,7 @@ update msg model =
         AddTask newTaskText -> 
             if newTaskText == "" then model 
             else { model | tasks = model.tasks ++ [createNewTask newTaskText], newTaskText = "" }
+        RemoveTask index ->
+            { model | tasks = List.indexedMap Tuple.pair model.tasks |> List.filter (\(i,_) -> i /= index) |> List.map Tuple.second }
 
 main = Browser.sandbox { init = init, update = update, view = view }
