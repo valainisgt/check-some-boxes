@@ -4395,6 +4395,14 @@ var author$project$Main$Incomplete = {$: 'Incomplete'};
 var author$project$Main$createNewTask = function (text) {
 	return {completionStatus: author$project$Main$Incomplete, text: text};
 };
+var author$project$Main$Completed = {$: 'Completed'};
+var author$project$Main$otherStatus = function (status) {
+	if (status.$ === 'Completed') {
+		return author$project$Main$Incomplete;
+	} else {
+		return author$project$Main$Completed;
+	}
+};
 var elm$core$Basics$apR = F2(
 	function (x, f) {
 		return f(x);
@@ -4580,7 +4588,7 @@ var author$project$Main$update = F2(
 									author$project$Main$createNewTask(newTaskText)
 								]))
 					});
-			default:
+			case 'RemoveTask':
 				var index = msg.a;
 				return _Utils_update(
 					model,
@@ -4596,6 +4604,23 @@ var author$project$Main$update = F2(
 								},
 								A2(elm$core$List$indexedMap, elm$core$Tuple$pair, model.tasks)))
 					});
+			default:
+				var index = msg.a;
+				return _Utils_update(
+					model,
+					{
+						tasks: A2(
+							elm$core$List$indexedMap,
+							F2(
+								function (i, task) {
+									return _Utils_eq(i, index) ? _Utils_update(
+										task,
+										{
+											completionStatus: author$project$Main$otherStatus(task.completionStatus)
+										}) : task;
+								}),
+							model.tasks)
+					});
 		}
 	});
 var author$project$Main$AddTask = function (a) {
@@ -4606,6 +4631,12 @@ var author$project$Main$ChangeNewTask = function (a) {
 };
 var author$project$Main$RemoveTask = function (a) {
 	return {$: 'RemoveTask', a: a};
+};
+var author$project$Main$UpdateStatus = function (a) {
+	return {$: 'UpdateStatus', a: a};
+};
+var author$project$Main$completed = function (status) {
+	return _Utils_eq(status, author$project$Main$Completed);
 };
 var elm$core$Array$branchFactor = 32;
 var elm$core$Array$Array_elm_builtin = F4(
@@ -4984,6 +5015,15 @@ var elm$html$Html$li = _VirtualDom_node('li');
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
 var elm$html$Html$ul = _VirtualDom_node('ul');
+var elm$json$Json$Encode$bool = _Json_wrap;
+var elm$html$Html$Attributes$boolProperty = F2(
+	function (key, bool) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			elm$json$Json$Encode$bool(bool));
+	});
+var elm$html$Html$Attributes$checked = elm$html$Html$Attributes$boolProperty('checked');
 var elm$json$Json$Encode$string = _Json_wrap;
 var elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -4997,7 +5037,24 @@ var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
 var elm$html$Html$Attributes$placeholder = elm$html$Html$Attributes$stringProperty('placeholder');
 var elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var elm$html$Html$Attributes$style = elm$virtual_dom$VirtualDom$style;
+var elm$html$Html$Attributes$type_ = elm$html$Html$Attributes$stringProperty('type');
 var elm$html$Html$Attributes$value = elm$html$Html$Attributes$stringProperty('value');
+var elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3(elm$core$List$foldr, elm$json$Json$Decode$field, decoder, fields);
+	});
+var elm$json$Json$Decode$bool = _Json_decodeBool;
+var elm$html$Html$Events$targetChecked = A2(
+	elm$json$Json$Decode$at,
+	_List_fromArray(
+		['target', 'checked']),
+	elm$json$Json$Decode$bool);
+var elm$html$Html$Events$onCheck = function (tagger) {
+	return A2(
+		elm$html$Html$Events$on,
+		'change',
+		A2(elm$json$Json$Decode$map, tagger, elm$html$Html$Events$targetChecked));
+};
 var elm$html$Html$Events$onClick = function (msg) {
 	return A2(
 		elm$html$Html$Events$on,
@@ -5016,10 +5073,6 @@ var elm$html$Html$Events$stopPropagationOn = F2(
 			elm$virtual_dom$VirtualDom$on,
 			event,
 			elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
-	});
-var elm$json$Json$Decode$at = F2(
-	function (fields, decoder) {
-		return A3(elm$core$List$foldr, elm$json$Json$Decode$field, decoder, fields);
 	});
 var elm$json$Json$Decode$string = _Json_decodeString;
 var elm$html$Html$Events$targetValue = A2(
@@ -5106,6 +5159,21 @@ var author$project$Main$view = function (model) {
 											]),
 										_List_fromArray(
 											[
+												A2(
+												elm$html$Html$input,
+												_List_fromArray(
+													[
+														elm$html$Html$Attributes$class('w3-check'),
+														elm$html$Html$Attributes$type_('checkbox'),
+														elm$html$Html$Attributes$checked(
+														author$project$Main$completed(task.completionStatus)),
+														A2(elm$html$Html$Attributes$style, 'margin-right', '5px'),
+														elm$html$Html$Events$onCheck(
+														function (_n0) {
+															return author$project$Main$UpdateStatus(index);
+														})
+													]),
+												_List_Nil),
 												elm$html$Html$text(task.text),
 												A2(
 												elm$html$Html$button,
