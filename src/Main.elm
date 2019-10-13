@@ -2,14 +2,15 @@ module Main exposing (main)
 
 import Browser
 import Html exposing (Html, text, div, h1, input, ul, li, Attribute, button)
-import Html.Attributes exposing (class, style, placeholder, value, id)
-import Html.Events exposing (onInput, keyCode, on, onClick)
+import Html.Attributes exposing (class, style, placeholder, value, id, type_, checked)
+import Html.Events exposing (onInput, keyCode, on, onClick, onCheck)
 import Json.Decode as Json
 
 type Msg 
     = ChangeNewTask String
     | AddTask String
     | RemoveTask Int
+    | UpdateStatus Int
 
 type CompletionStatus = Incomplete | Completed
 type alias Task = 
@@ -45,6 +46,15 @@ onEnter msg =
 times: Char
 times = '\u{00D7}'
 
+completed: CompletionStatus -> Bool
+completed status = status == Completed
+
+otherStatus: CompletionStatus -> CompletionStatus
+otherStatus status =
+    case status of 
+        Completed -> Incomplete
+        Incomplete -> Completed
+
 view: Model -> Html Msg
 view model =
     div [ style "padding" "64px" ] [
@@ -53,7 +63,7 @@ view model =
             div [ class "w3-padding-16" ] [
                 input [ id "newTask", class "w3-input", placeholder "what needs to be done?", value model.newTaskText, onInput ChangeNewTask, onEnter (AddTask (String.trim model.newTaskText)) ] []
             ],
-            ul [ class "w3-ul" ] (List.indexedMap (\index task -> li [ class "w3-display-container" ] [text task.text, button [ class "w3-button", class "w3-display-right", onClick (RemoveTask index)] [ text (String.fromChar times)] ]) model.tasks)
+            ul [ class "w3-ul" ] (List.indexedMap (\index task -> li [ class "w3-display-container" ] [ input [class "w3-check", type_ "checkbox", checked (completed task.completionStatus), style "margin-right" "5px", onCheck (\_ -> UpdateStatus index)] [], text task.text, button [ class "w3-button", class "w3-display-right", onClick (RemoveTask index)] [ text (String.fromChar times)] ]) model.tasks)
         ]
     ]
     
@@ -67,5 +77,7 @@ update msg model =
             else { model | tasks = model.tasks ++ [createNewTask newTaskText], newTaskText = "" }
         RemoveTask index ->
             { model | tasks = List.indexedMap Tuple.pair model.tasks |> List.filter (\(i,_) -> i /= index) |> List.map Tuple.second }
+        UpdateStatus index ->
+            { model | tasks = List.indexedMap (\i task -> if i == index then { task | completionStatus = (otherStatus task.completionStatus) } else task) model.tasks }
 
 main = Browser.sandbox { init = init, update = update, view = view }

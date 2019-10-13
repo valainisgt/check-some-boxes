@@ -1,4 +1,4 @@
-const { openBrowser, goto, closeBrowser, textBox, focus, press, listItem, write, into, text, click, button, toRightOf, below } = require('taiko');
+const { openBrowser, goto, closeBrowser, textBox, focus, press, listItem, write, into, text, click, button, toLeftOf, checkBox, toRightOf, below } = require('taiko');
 import { fakeServer } from "./../infrastructure/fakeServer";
 import { build, buildDir } from "./../infrastructure/build";
 import { Server } from "http";
@@ -122,6 +122,22 @@ test.serial("Third item is removed properly", async t => {
     t.is(task2, true);
     t.is(task3, false);
 });
+
+test.serial("Task status can be updated", async t => {
+    await write("task 1", into(textBox({id:"newTask"})));
+    await press('Enter');
+
+    await checkBox(toLeftOf("task 1")).check();
+
+    const checked = await checkBox(toLeftOf("task 1")).isChecked();
+    
+    await checkBox(toLeftOf("task 1")).uncheck();
+
+    const unchecked = await checkBox(toLeftOf("task 1")).isChecked();
+
+    t.is(checked, true);
+    t.is(unchecked, false);
+})
 
 test.afterEach(async t => {
     await closeBrowser();
