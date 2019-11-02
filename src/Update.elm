@@ -5,6 +5,7 @@ import Json.Encode as E
 import Model exposing (..)
 import Msg exposing (..)
 import Ports exposing (launchViewer)
+import Url.Builder as B exposing (relative, string, int)
 
 
 createNewTask : String -> Task
@@ -22,7 +23,7 @@ otherStatus status =
             Completed
 
 
-encodeTasks : List Task -> E.Value
+encodeTasks : List Task -> String
 encodeTasks tasks =
     let
         completed =
@@ -37,10 +38,7 @@ encodeTasks tasks =
                     )
                 |> List.foldl (\x acc -> Bitwise.or acc x) 0
     in
-    E.object
-        [ ( "completed", E.int completed )
-        , ( "task", E.list E.string (List.map (\task -> task.text) tasks) )
-        ]
+    B.relative [ "viewer" ] (List.foldl (\task acc -> acc ++  [B.string "task" task.text]) [ B.int "completed" completed ] tasks)
 
 
 updateHomeModel : Msg -> HomeModel -> ( HomeModel, Cmd Msg )
@@ -76,12 +74,7 @@ updateHomeModel msg model =
             )
 
         LaunchViewer ->
-            let
-                value : E.Value
-                value =
-                    encodeTasks model.tasks
-            in
-            ( model, launchViewer value )
+            ( model, launchViewer <| encodeTasks model.tasks )
 
         NoOp ->
             ( model, Cmd.none )
