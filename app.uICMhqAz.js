@@ -5810,7 +5810,8 @@ var author$project$Main$urlChange = function (_n0) {
 var author$project$Main$urlRequest = function (_n0) {
 	return author$project$Msg$NoOp;
 };
-var author$project$Ports$launchViewer = _Platform_outgoingPort('launchViewer', elm$core$Basics$identity);
+var elm$json$Json$Encode$string = _Json_wrap;
+var author$project$Ports$launchViewer = _Platform_outgoingPort('launchViewer', elm$json$Json$Encode$string);
 var author$project$Update$createNewTask = function (text) {
 	return {completionStatus: author$project$Model$Incomplete, text: text};
 };
@@ -5818,30 +5819,46 @@ var author$project$Model$isCompleted = function (status) {
 	return _Utils_eq(status, author$project$Model$Completed);
 };
 var elm$core$Bitwise$or = _Bitwise_or;
-var elm$json$Json$Encode$int = _Json_wrap;
-var elm$json$Json$Encode$list = F2(
-	function (func, entries) {
-		return _Json_wrap(
-			A3(
-				elm$core$List$foldl,
-				_Json_addEntry(func),
-				_Json_emptyArray(_Utils_Tuple0),
-				entries));
+var elm$url$Url$percentEncode = _Url_percentEncode;
+var elm$url$Url$Builder$QueryParameter = F2(
+	function (a, b) {
+		return {$: 'QueryParameter', a: a, b: b};
 	});
-var elm$json$Json$Encode$object = function (pairs) {
-	return _Json_wrap(
-		A3(
-			elm$core$List$foldl,
-			F2(
-				function (_n0, obj) {
-					var k = _n0.a;
-					var v = _n0.b;
-					return A3(_Json_addField, k, v, obj);
-				}),
-			_Json_emptyObject(_Utils_Tuple0),
-			pairs));
+var elm$url$Url$Builder$int = F2(
+	function (key, value) {
+		return A2(
+			elm$url$Url$Builder$QueryParameter,
+			elm$url$Url$percentEncode(key),
+			elm$core$String$fromInt(value));
+	});
+var elm$url$Url$Builder$toQueryPair = function (_n0) {
+	var key = _n0.a;
+	var value = _n0.b;
+	return key + ('=' + value);
 };
-var elm$json$Json$Encode$string = _Json_wrap;
+var elm$url$Url$Builder$toQuery = function (parameters) {
+	if (!parameters.b) {
+		return '';
+	} else {
+		return '?' + A2(
+			elm$core$String$join,
+			'&',
+			A2(elm$core$List$map, elm$url$Url$Builder$toQueryPair, parameters));
+	}
+};
+var elm$url$Url$Builder$relative = F2(
+	function (pathSegments, parameters) {
+		return _Utils_ap(
+			A2(elm$core$String$join, '/', pathSegments),
+			elm$url$Url$Builder$toQuery(parameters));
+	});
+var elm$url$Url$Builder$string = F2(
+	function (key, value) {
+		return A2(
+			elm$url$Url$Builder$QueryParameter,
+			elm$url$Url$percentEncode(key),
+			elm$url$Url$percentEncode(value));
+	});
 var author$project$Update$encodeTasks = function (tasks) {
 	var completed = A3(
 		elm$core$List$foldl,
@@ -5857,24 +5874,26 @@ var author$project$Update$encodeTasks = function (tasks) {
 					return author$project$Model$isCompleted(task.completionStatus) ? A2(elm$core$Basics$pow, 2, index) : 0;
 				}),
 			tasks));
-	return elm$json$Json$Encode$object(
+	return A2(
+		elm$url$Url$Builder$relative,
 		_List_fromArray(
-			[
-				_Utils_Tuple2(
-				'completed',
-				elm$json$Json$Encode$int(completed)),
-				_Utils_Tuple2(
-				'task',
-				A2(
-					elm$json$Json$Encode$list,
-					elm$json$Json$Encode$string,
-					A2(
-						elm$core$List$map,
-						function (task) {
-							return task.text;
-						},
-						tasks)))
-			]));
+			['viewer']),
+		A3(
+			elm$core$List$foldl,
+			F2(
+				function (task, acc) {
+					return _Utils_ap(
+						acc,
+						_List_fromArray(
+							[
+								A2(elm$url$Url$Builder$string, 'task', task.text)
+							]));
+				}),
+			_List_fromArray(
+				[
+					A2(elm$url$Url$Builder$int, 'completed', completed)
+				]),
+			tasks));
 };
 var author$project$Update$otherStatus = function (status) {
 	if (status.$ === 'Completed') {
@@ -5966,10 +5985,10 @@ var author$project$Update$updateHomeModel = F2(
 						}),
 					elm$core$Platform$Cmd$none);
 			case 'LaunchViewer':
-				var value = author$project$Update$encodeTasks(model.tasks);
 				return _Utils_Tuple2(
 					model,
-					author$project$Ports$launchViewer(value));
+					author$project$Ports$launchViewer(
+						author$project$Update$encodeTasks(model.tasks)));
 			default:
 				return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 		}
